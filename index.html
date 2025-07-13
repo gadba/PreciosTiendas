@@ -89,10 +89,15 @@
         }
 
         /* Other styles */
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
         .transition-all { transition: all 0.3s ease-in-out; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .loader { border-top-color: #3498db; animation: spin 1s linear infinite; }
+        .loader { border-top-color: var(--color-accent); animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .modal-overlay {
             transition: opacity 0.3s ease;
@@ -119,6 +124,10 @@
                     <svg id="pago-usd-icon-locked" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                     <svg id="pago-usd-icon-unlocked" class="h-6 w-6 hidden text-theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
                 </button>
+                <!-- Special View Button -->
+                <button id="special-view-button" class="p-2 rounded-full text-theme-text-secondary hover:bg-theme-bg focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </button>
                 <!-- Cart Button -->
                 <button id="cart-button" class="relative p-2 rounded-full text-theme-text-secondary hover:bg-theme-bg focus:outline-none">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -126,7 +135,7 @@
                 </button>
                 <div id="theme-selector" class="relative">
                     <button id="theme-menu-button" class="p-2 rounded-full text-theme-text-secondary hover:bg-theme-bg focus:outline-none">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a4 4 0 014-4h10a4 4 0 014 4v12a4 4 0 01-4 4H7z"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z" /></svg>
                     </button>
                     <div id="theme-menu" class="hidden absolute right-0 mt-2 w-40 bg-theme-surface rounded-md shadow-lg z-30 border border-theme-border">
                         <a href="#" class="block px-4 py-2 text-sm text-theme-text-primary hover:bg-theme-bg" data-theme="claro">Claro</a>
@@ -147,7 +156,7 @@
         <div id="error-message" class="hidden text-center p-8"></div>
 
         <!-- Store Selector -->
-        <div id="store-selector-container" class="p-4 md:p-8 text-center">
+        <div id="store-selector-container" class="p-4 md:p-8 text-center" style="display: none;">
             <h2 class="text-xl font-semibold mb-4">Selecciona una tienda</h2>
             <div id="store-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
         </div>
@@ -155,21 +164,39 @@
         <!-- Catalog View (hidden by default) -->
         <div id="catalog-container" class="hidden">
              <div class="p-4 flex flex-wrap gap-4 items-center">
-                <div class="flex-grow">
-                    <label for="bcv-rate" class="block text-sm font-medium text-theme-text-secondary">Tasa BCV</label>
-                    <input type="number" id="bcv-rate" placeholder="0.00" step="0.0001" min="0" class="w-full md:w-48 p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent">
-                </div>
+                 <div class="flex-grow">
+                     <label for="bcv-rate" class="block text-sm font-medium text-theme-text-secondary">Tasa BCV</label>
+                     <input type="text" inputmode="decimal" id="bcv-rate" placeholder="0.00" class="w-full md:w-48 p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent">
+                 </div>
+             </div>
+             <div id="catalog-content" class="hidden">
+                 <div id="filters-container" class="p-4 bg-theme-surface shadow-sm sticky top-[76px] md:top-[80px] z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                     <select id="filter-menu" class="w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent"></select>
+                     <select id="filter-tipo" class="w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent"></select>
+                     <select id="filter-pres" class="w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent"></select>
+                 </div>
+                 <div id="product-list" class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+                  <div id="no-results" class="hidden text-center p-8">
+                     <p class="text-theme-text-secondary font-semibold text-lg">No se encontraron productos.</p>
+                 </div>
+             </div>
+        </div>
+        
+        <!-- Special View Container -->
+        <div id="special-view-container" class="hidden">
+            <div class="p-4 flex flex-wrap gap-4 items-center">
+                <button id="back-to-catalog-button" class="bg-theme-text-secondary text-theme-bg font-bold py-2 px-4 rounded-lg transition-all">&larr; Volver al Catálogo</button>
+                 <div class="flex-grow">
+                     <label for="bcv-rate-special" class="block text-sm font-medium text-theme-text-secondary">Tasa BCV</label>
+                     <input type="text" inputmode="decimal" id="bcv-rate-special" placeholder="0.00" class="w-full md:w-48 p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent">
+                 </div>
             </div>
-            <div id="catalog-content" class="hidden">
-                <div id="filters-container" class="p-4 bg-theme-surface shadow-sm sticky top-[76px] md:top-[80px] z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <select id="filter-menu" class="w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent"></select>
-                    <select id="filter-tipo" class="w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent"></select>
-                    <select id="filter-pres" class="w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent"></select>
+            <div id="special-catalog-content" class="hidden">
+                <div class="p-4 bg-theme-surface shadow-sm sticky top-[76px] md:top-[80px] z-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <select id="filter-tipo-special" class="w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent"></select>
+                    <select id="filter-pres-special" class="w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent"></select>
                 </div>
-                <div id="product-list" class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-                 <div id="no-results" class="hidden text-center p-8">
-                    <p class="text-theme-text-secondary font-semibold text-lg">No se encontraron productos.</p>
-                </div>
+                <div id="special-product-table" class="p-4 space-y-2"></div>
             </div>
         </div>
 
@@ -184,6 +211,21 @@
                     <div class="mt-4 flex justify-end gap-4">
                         <button type="button" id="cancel-password" class="px-4 py-2 rounded-lg bg-theme-text-secondary text-theme-bg">Cancelar</button>
                         <button type="submit" class="px-4 py-2 rounded-lg bg-theme-accent text-theme-accent-text">Activar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Quantity Modal -->
+        <div id="quantity-modal" class="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4 hidden modal-overlay">
+            <div class="bg-theme-surface p-6 rounded-lg shadow-xl w-full max-w-sm">
+                <h3 class="text-lg font-bold text-theme-text-primary mb-4">Introducir Cantidad</h3>
+                <form id="quantity-form">
+                    <label for="quantity-input" class="block text-sm font-medium text-theme-text-secondary">Cantidad</label>
+                    <input type="number" id="quantity-input" min="1" value="1" class="mt-1 w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent">
+                    <div class="mt-4 flex justify-end gap-4">
+                        <button type="button" id="cancel-quantity" class="px-4 py-2 rounded-lg bg-theme-text-secondary text-theme-bg">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-theme-accent text-theme-accent-text">Aceptar</button>
                     </div>
                 </form>
             </div>
@@ -205,23 +247,57 @@
                         <p>Tu carrito está vacío.</p>
                     </div>
                 </div>
-                <!-- Cart Footer (Totals) -->
-                <div id="cart-footer" class="p-4 border-t border-theme-border space-y-2 flex-shrink-0 hidden">
-                    <button id="gemini-recipe-btn" class="w-full bg-theme-accent text-theme-accent-text py-2 rounded-lg font-semibold mb-2 flex items-center justify-center gap-2">
+                <!-- Cart Footer -->
+                <div id="cart-footer" class="p-4 border-t border-theme-border flex-shrink-0 hidden">
+                    <button id="gemini-recipe-btn" class="w-full bg-theme-accent text-theme-accent-text py-2 rounded-lg font-semibold mb-4 flex items-center justify-center gap-2">
                         ✨ Sugerir Receta con IA
                     </button>
-                    <div class="flex justify-between text-lg text-theme-text-secondary">
-                        <span>Total US$:</span>
-                        <span id="cart-total-usd">0.00</span>
+                    
+                    <!-- Subtotals -->
+                    <div class="space-y-1 text-theme-text-secondary">
+                        <div class="flex justify-between">
+                            <span>Subtotal US$:</span>
+                            <span id="cart-subtotal-usd">0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Subtotal Bs.:</span>
+                            <span id="cart-subtotal-bs">0.00</span>
+                        </div>
+                        <div id="cart-subtotal-solo-usd-container" class="hidden flex justify-between font-semibold text-theme-accent">
+                            <span>Subtotal SOLO $:</span>
+                            <span id="cart-subtotal-solo-usd">0.00</span>
+                        </div>
                     </div>
-                    <div class="flex justify-between text-lg text-theme-text-secondary">
-                        <span>Total Bs.:</span>
-                        <span id="cart-total-bs">0.00</span>
+
+                    <!-- Discount Section -->
+                    <div class="mt-4 pt-4 border-t border-theme-border space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="discount-input" class="font-medium text-theme-text-primary">Descuento (%):</label>
+                            <input type="number" id="discount-input" min="0" max="10" step="0.1" value="0" class="w-24 p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary text-right focus:ring-2 focus:ring-theme-accent">
+                        </div>
+                        <div class="flex justify-between text-red-500">
+                            <span>Monto Descontado:</span>
+                            <span id="discount-amount-display">- 0.00 US$</span>
+                        </div>
                     </div>
-                    <div id="cart-total-solo-usd-container" class="hidden flex justify-between text-xl font-bold text-theme-accent">
-                        <span>Total SOLO $:</span>
-                        <span id="cart-total-solo-usd">0.00</span>
+
+                    <!-- Final Totals -->
+                    <div class="mt-4 pt-4 border-t border-theme-border space-y-2 text-xl font-bold">
+                        <div class="flex justify-between text-theme-text-primary">
+                            <span>Total US$:</span>
+                            <span id="final-total-usd">0.00</span>
+                        </div>
+                        <div class="flex justify-between text-theme-text-primary">
+                            <span>Total Bs.:</span>
+                            <span id="final-total-bs">0.00</span>
+                        </div>
+                         <div id="final-total-solo-usd-container" class="hidden flex justify-between text-theme-accent">
+                            <span>Total SOLO $:</span>
+                            <span id="final-total-solo-usd">0.00</span>
+                        </div>
                     </div>
+
+                    <button id="clear-cart-btn" class="w-full bg-red-600 text-white py-2 rounded-lg font-semibold mt-4">Vaciar Carrito</button>
                 </div>
             </div>
         </div>
@@ -250,16 +326,31 @@
             const errorMessage = document.getElementById('error-message');
             const storeSelectorContainer = document.getElementById('store-selector-container');
             const storeList = document.getElementById('store-list');
+            // Main Catalog View
             const catalogContainer = document.getElementById('catalog-container');
             const catalogContent = document.getElementById('catalog-content');
             const productList = document.getElementById('product-list');
             const noResults = document.getElementById('no-results');
+            const bcvRateInput = document.getElementById('bcv-rate');
+            const filterMenu = document.getElementById('filter-menu');
+            const filterTipo = document.getElementById('filter-tipo');
+            const filterPres = document.getElementById('filter-pres');
+            // Special View
+            const specialViewContainer = document.getElementById('special-view-container');
+            const specialCatalogContent = document.getElementById('special-catalog-content');
+            const bcvRateInputSpecial = document.getElementById('bcv-rate-special');
+            const filterTipoSpecial = document.getElementById('filter-tipo-special');
+            const filterPresSpecial = document.getElementById('filter-pres-special');
+            const specialProductTable = document.getElementById('special-product-table');
+            const backToCatalogButton = document.getElementById('back-to-catalog-button');
+            const specialViewButton = document.getElementById('special-view-button');
+            // Header & Shared
             const headerTitle = document.getElementById('header-title');
             const searchContainer = document.getElementById('search-container');
             const searchBar = document.getElementById('search-bar');
-            const bcvRateInput = document.getElementById('bcv-rate');
             const themeMenuButton = document.getElementById('theme-menu-button');
             const themeMenu = document.getElementById('theme-menu');
+            // Password
             const pagoUsdButton = document.getElementById('pago-usd-button');
             const pagoUsdIconLocked = document.getElementById('pago-usd-icon-locked');
             const pagoUsdIconUnlocked = document.getElementById('pago-usd-icon-unlocked');
@@ -268,6 +359,12 @@
             const passwordInput = document.getElementById('password-input');
             const passwordError = document.getElementById('password-error');
             const cancelPasswordBtn = document.getElementById('cancel-password');
+            // Quantity Modal
+            const quantityModal = document.getElementById('quantity-modal');
+            const quantityForm = document.getElementById('quantity-form');
+            const quantityInput = document.getElementById('quantity-input');
+            const cancelQuantityBtn = document.getElementById('cancel-quantity');
+            // Cart
             const cartButton = document.getElementById('cart-button');
             const cartBadge = document.getElementById('cart-badge');
             const cartModal = document.getElementById('cart-modal');
@@ -276,28 +373,36 @@
             const cartItemsList = document.getElementById('cart-items-list');
             const emptyCartMessage = document.getElementById('empty-cart-message');
             const cartFooter = document.getElementById('cart-footer');
-            const cartTotalUsd = document.getElementById('cart-total-usd');
-            const cartTotalBs = document.getElementById('cart-total-bs');
-            const cartTotalSoloUsdContainer = document.getElementById('cart-total-solo-usd-container');
-            const cartTotalSoloUsd = document.getElementById('cart-total-solo-usd');
+            const clearCartBtn = document.getElementById('clear-cart-btn');
+            // Cart Subtotals
+            const cartSubtotalUsd = document.getElementById('cart-subtotal-usd');
+            const cartSubtotalBs = document.getElementById('cart-subtotal-bs');
+            const cartSubtotalSoloUsdContainer = document.getElementById('cart-subtotal-solo-usd-container');
+            const cartSubtotalSoloUsd = document.getElementById('cart-subtotal-solo-usd');
+            // Cart Discount
+            const discountInput = document.getElementById('discount-input');
+            const discountAmountDisplay = document.getElementById('discount-amount-display');
+            // Cart Final Totals
+            const finalTotalUsd = document.getElementById('final-total-usd');
+            const finalTotalBs = document.getElementById('final-total-bs');
+            const finalTotalSoloUsdContainer = document.getElementById('final-total-solo-usd-container');
+            const finalTotalSoloUsd = document.getElementById('final-total-solo-usd');
+            // Gemini
             const geminiRecipeBtn = document.getElementById('gemini-recipe-btn');
             const geminiModal = document.getElementById('gemini-modal');
             const geminiModalTitle = document.getElementById('gemini-modal-title');
             const geminiModalContent = document.getElementById('gemini-modal-content');
             const closeGeminiModal = document.getElementById('close-gemini-modal');
 
-            // Filters
-            const filterMenu = document.getElementById('filter-menu');
-            const filterTipo = document.getElementById('filter-tipo');
-            const filterPres = document.getElementById('filter-pres');
-
             // App State
             let allData = [];
             let currentStoreProducts = [];
             let cart = [];
+            let discountPercentage = 0;
             let currentStore = '';
             let bcvRate = 0;
             let isPagoUsdActive = false;
+            let currentView = 'store-selector'; // 'store-selector', 'catalog', 'special'
             
             // --- Gemini API ---
             async function callGeminiApi(prompt) {
@@ -379,7 +484,7 @@
             });
 
             function initializeTheme() {
-                const savedTheme = localStorage.getItem('theme') || 'claro';
+                const savedTheme = localStorage.getItem('theme') || 'oscuro'; // Default to dark mode
                 applyTheme(savedTheme);
             }
 
@@ -405,7 +510,7 @@
                     isPagoUsdActive = false;
                     sessionStorage.setItem('pagoUsdActive', 'false');
                     updatePagoUsdButton();
-                    renderProducts();
+                    renderCurrentView();
                 } else {
                     passwordModal.classList.remove('hidden');
                     passwordInput.focus();
@@ -421,7 +526,7 @@
                     passwordModal.classList.add('hidden');
                     passwordInput.value = '';
                     passwordError.classList.add('hidden');
-                    renderProducts();
+                    renderCurrentView();
                 } else {
                     passwordError.classList.remove('hidden');
                     passwordInput.value = '';
@@ -433,23 +538,67 @@
                 passwordInput.value = '';
                 passwordError.classList.add('hidden');
             });
+            
+            // --- Quantity Modal Management ---
+            function showQuantityModal(productId) {
+                quantityModal.dataset.productId = productId;
+                quantityInput.value = 1;
+                quantityModal.classList.remove('hidden');
+                quantityInput.focus();
+            }
+
+            function hideQuantityModal() {
+                quantityModal.classList.add('hidden');
+            }
+
+            quantityForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const productId = quantityModal.dataset.productId;
+                const quantity = parseInt(quantityInput.value, 10);
+                if (productId && quantity > 0) {
+                    addToCart(productId, quantity);
+                }
+                hideQuantityModal();
+            });
+
+            cancelQuantityBtn.addEventListener('click', hideQuantityModal);
+
 
             // --- Cart Management ---
+            function clearCart() {
+                cart = [];
+                discountPercentage = 0;
+                discountInput.value = 0;
+                saveCart();
+            }
+
             function saveCart() {
-                sessionStorage.setItem('shoppingCart', JSON.stringify(cart));
+                const cartData = {
+                    items: cart,
+                    discount: discountPercentage
+                };
+                sessionStorage.setItem('shoppingCart', JSON.stringify(cartData));
                 updateCartBadge();
                 renderCart();
             }
 
             function loadCart() {
-                const savedCart = sessionStorage.getItem('shoppingCart');
-                cart = savedCart ? JSON.parse(savedCart) : [];
+                const savedCartData = sessionStorage.getItem('shoppingCart');
+                if (savedCartData) {
+                    const cartData = JSON.parse(savedCartData);
+                    cart = cartData.items || [];
+                    discountPercentage = cartData.discount || 0;
+                    discountInput.value = discountPercentage;
+                } else {
+                    cart = [];
+                    discountPercentage = 0;
+                }
                 updateCartBadge();
                 renderCart();
             }
 
             function updateCartBadge() {
-                const totalItems = cart.length;
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
                 if (totalItems > 0) {
                     cartBadge.textContent = totalItems;
                     cartBadge.classList.remove('hidden');
@@ -458,14 +607,17 @@
                 }
             }
 
-            function addToCart(productId) {
+            function addToCart(productId, quantity) {
+                const numQuantity = parseInt(quantity, 10);
+                if (isNaN(numQuantity) || numQuantity <= 0) return;
+
                 const existingItem = cart.find(item => item.id === productId);
                 if (existingItem) {
-                    existingItem.quantity++;
+                    existingItem.quantity += numQuantity;
                 } else {
                     const productData = allData.find(p => (p.Producto + ' - ' + (p.Pres || p['Pres.'] || p.Presentacion)) === productId);
                     if(productData) {
-                        cart.push({ id: productId, quantity: 1 });
+                        cart.push({ id: productId, quantity: numQuantity });
                     }
                 }
                 saveCart();
@@ -493,15 +645,15 @@
                 emptyCartMessage.classList.add('hidden');
                 cartFooter.classList.remove('hidden');
 
-                let totalUsd = 0;
-                let totalSoloUsd = 0;
+                let subtotalUsd = 0;
+                let subtotalSoloUsd = 0;
 
                 cart.forEach(item => {
                     const productData = allData.find(p => (p.Producto + ' - ' + (p.Pres || p['Pres.'] || p.Presentacion)) === item.id);
                     if (!productData) return;
 
-                    totalUsd += Number(productData['Precio $']) * item.quantity;
-                    totalSoloUsd += Number(productData['Precio $ con Desc']) * item.quantity;
+                    subtotalUsd += Number(productData['Precio $']) * item.quantity;
+                    subtotalSoloUsd += Number(productData['Precio $ con Desc']) * item.quantity;
                     
                     const itemElement = document.createElement('div');
                     itemElement.className = 'flex items-center justify-between py-2 border-b border-theme-border';
@@ -519,14 +671,32 @@
                     cartItemsList.appendChild(itemElement);
                 });
 
-                cartTotalUsd.textContent = formatNumber(totalUsd);
-                cartTotalBs.textContent = bcvRate > 0 ? formatNumber(totalUsd * bcvRate) : '0.00';
+                // Calculate discount
+                const discountRate = discountPercentage / 100;
+                const discountAmount = subtotalUsd * discountRate;
+                const finalUsd = subtotalUsd - discountAmount;
+                const finalBs = finalUsd * bcvRate;
+                const finalSoloUsdValue = subtotalSoloUsd * (1 - discountRate);
+
+                // Update Subtotals
+                cartSubtotalUsd.textContent = formatNumber(subtotalUsd);
+                cartSubtotalBs.textContent = bcvRate > 0 ? formatNumber(subtotalUsd * bcvRate) : '0.00';
+                
+                // Update Discount
+                discountAmountDisplay.textContent = `- ${formatNumber(discountAmount)} US$`;
+
+                // Update Final Totals
+                finalTotalUsd.textContent = formatNumber(finalUsd);
+                finalTotalBs.textContent = bcvRate > 0 ? formatNumber(finalBs) : '0.00';
                 
                 if (isPagoUsdActive) {
-                    cartTotalSoloUsdContainer.classList.remove('hidden');
-                    cartTotalSoloUsd.textContent = formatNumber(totalSoloUsd);
+                    cartSubtotalSoloUsdContainer.classList.remove('hidden');
+                    cartSubtotalSoloUsd.textContent = formatNumber(subtotalSoloUsd);
+                    finalTotalSoloUsdContainer.classList.remove('hidden');
+                    finalTotalSoloUsd.textContent = formatNumber(finalSoloUsdValue);
                 } else {
-                    cartTotalSoloUsdContainer.classList.add('hidden');
+                    cartSubtotalSoloUsdContainer.classList.add('hidden');
+                    finalTotalSoloUsdContainer.classList.add('hidden');
                 }
             }
 
@@ -568,6 +738,9 @@
                     else if (Array.isArray(responseData)) allData = responseData;
                     else throw new Error("La respuesta de la API no tiene el formato esperado.");
 
+                    // Filter out products without a valid price
+                    allData = allData.filter(p => p['Precio $'] && Number(p['Precio $']) > 0);
+
                     renderStoreSelector();
                 } catch (error) {
                     console.error("Failed to fetch data:", error);
@@ -576,6 +749,34 @@
                 } finally {
                     loader.style.display = 'none';
                 }
+            }
+
+            // --- View Management ---
+            function showView(viewName) {
+                currentView = viewName;
+                storeSelectorContainer.style.display = 'none';
+                catalogContainer.style.display = 'none';
+                specialViewContainer.style.display = 'none';
+
+                if (viewName === 'store-selector') {
+                    storeSelectorContainer.style.display = 'block';
+                    headerTitle.textContent = 'Catálogo';
+                    searchContainer.classList.add('hidden');
+                } else if (viewName === 'catalog') {
+                    catalogContainer.style.display = 'block';
+                    headerTitle.textContent = currentStore;
+                    searchContainer.classList.remove('hidden');
+                } else if (viewName === 'special') {
+                    specialViewContainer.style.display = 'block';
+                    headerTitle.textContent = 'Precios por Presentación';
+                    searchContainer.classList.add('hidden');
+                }
+            }
+            
+            function renderCurrentView() {
+                if(currentView === 'catalog') renderProducts();
+                else if(currentView === 'special') renderSpecialView();
+                renderCart();
             }
 
             // --- Rendering Functions ---
@@ -603,13 +804,13 @@
                     button.addEventListener('click', () => selectStore(store));
                     storeList.appendChild(button);
                 });
-                storeSelectorContainer.style.display = 'block';
+                showView('store-selector');
             }
             
-            function formatNumber(value) {
+            function formatNumber(value, minDigits = 2, maxDigits = 2) {
                 return new Intl.NumberFormat('es-ES', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
+                    minimumFractionDigits: minDigits,
+                    maximumFractionDigits: maxDigits
                 }).format(value);
             }
 
@@ -677,20 +878,20 @@
                         }).join('');
                         
                         card.innerHTML = `<img src="${firstPresentation.Images || placeholderImg}" alt="${productName}" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='${placeholderImg}';">
-                                          <div class="p-4 flex flex-col flex-grow">
-                                              <div class="flex items-center justify-between mb-3">
-                                                  <h3 class="text-lg font-semibold text-theme-text-primary">${productName}</h3>
-                                                  <button class="gemini-description-btn p-1 text-theme-text-secondary hover:text-theme-accent" data-product-name="${productName}" data-product-menu="${firstPresentation.Menu}" data-product-tipo="${firstPresentation.Tipo}">
-                                                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                                                  </button>
-                                              </div>
-                                              <div class="w-full overflow-x-auto no-scrollbar">
-                                                  <table class="min-w-full bg-theme-surface-secondary rounded-lg">
-                                                      <thead><tr class="bg-theme-bg"><th class="py-2 px-3 text-left text-xs font-bold uppercase text-theme-text-secondary">PRES.</th><th class="py-2 px-3 text-right text-xs font-bold uppercase text-theme-text-secondary">US$</th><th class="py-2 px-3 text-right text-xs font-bold uppercase text-theme-text-secondary">Bs.</th>${tableHeaderPagoUsd}<th class="w-10"></th></tr></thead>
-                                                      <tbody>${tableRows}</tbody>
-                                                  </table>
-                                              </div>
-                                          </div>`;
+                                        <div class="p-4 flex flex-col flex-grow">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <h3 class="text-lg font-semibold text-theme-text-primary">${productName}</h3>
+                                                <button class="gemini-description-btn p-1 text-theme-text-secondary hover:text-theme-accent" data-product-name="${productName}" data-product-menu="${firstPresentation.Menu}" data-product-tipo="${firstPresentation.Tipo}">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                                                </button>
+                                            </div>
+                                            <div class="w-full overflow-x-auto no-scrollbar">
+                                                <table class="min-w-full bg-theme-surface-secondary rounded-lg">
+                                                    <thead><tr class="bg-theme-bg"><th class="py-2 px-3 text-left text-xs font-bold uppercase text-theme-text-secondary">PRES.</th><th class="py-2 px-3 text-right text-xs font-bold uppercase text-theme-text-secondary">US$</th><th class="py-2 px-3 text-right text-xs font-bold uppercase text-theme-text-secondary">Bs.</th>${tableHeaderPagoUsd}<th class="w-10"></th></tr></thead>
+                                                    <tbody>${tableRows}</tbody>
+                                                </table>
+                                            </div>
+                                        </div>`;
                         productList.appendChild(card);
                     }
                 } else {
@@ -714,23 +915,122 @@
                         const productId = product.Producto + ' - ' + presValue;
 
                         card.innerHTML = `<img src="${product.Images || placeholderImg}" alt="${product.Producto}" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='${placeholderImg}';">
-                                          <div class="p-4 flex flex-col flex-grow">
-                                              <div class="flex items-center justify-between mb-2">
-                                                  <h3 class="text-lg font-semibold text-theme-text-primary flex-grow">${product.Producto}</h3>
-                                                  <button class="gemini-description-btn p-1 text-theme-text-secondary hover:text-theme-accent" data-product-name="${product.Producto}" data-product-menu="${product.Menu}" data-product-tipo="${product.Tipo}">
-                                                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                                                  </button>
-                                              </div>
-                                              <div class="mt-auto space-y-1">
-                                                  <p class="text-theme-text-secondary font-medium">${presValue}</p>
-                                                  <p class="text-theme-text-secondary text-sm">US$: ${formatNumber(priceRegular)}</p>
-                                                  <p class="text-theme-text-secondary font-medium">Bs.: ${localPrice}</p>
-                                                  ${pagoUsdHtml}
-                                              </div>
-                                              <button data-product-id="${productId}" class="add-to-cart-btn mt-4 w-full bg-theme-accent text-theme-accent-text py-2 rounded-lg">Añadir al Carrito</button>
-                                          </div>`;
+                                        <div class="p-4 flex flex-col flex-grow">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <h3 class="text-lg font-semibold text-theme-text-primary flex-grow">${product.Producto}</h3>
+                                                <button class="gemini-description-btn p-1 text-theme-text-secondary hover:text-theme-accent" data-product-name="${product.Producto}" data-product-menu="${product.Menu}" data-product-tipo="${product.Tipo}">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                                                </button>
+                                            </div>
+                                            <div class="mt-auto space-y-1">
+                                                <p class="text-theme-text-secondary font-medium">${presValue}</p>
+                                                <p class="text-theme-text-secondary text-sm">US$: ${formatNumber(priceRegular)}</p>
+                                                <p class="text-theme-text-secondary font-medium">Bs.: ${localPrice}</p>
+                                                ${pagoUsdHtml}
+                                            </div>
+                                            <button data-product-id="${productId}" class="add-to-cart-btn mt-4 w-full bg-theme-accent text-theme-accent-text py-2 rounded-lg">Añadir al Carrito</button>
+                                        </div>`;
                         productList.appendChild(card);
                     });
+                }
+            }
+            
+            // --- Special View Functions ---
+            function renderSpecialView() {
+                if (bcvRate <= 0) {
+                    specialProductTable.innerHTML = '';
+                    return;
+                }
+                
+                const tipo = filterTipoSpecial.value;
+                const pres = filterPresSpecial.value;
+
+                let filtered = currentStoreProducts;
+
+                if (tipo) {
+                    filtered = filtered.filter(p => p.Tipo === tipo);
+                }
+                if (pres) {
+                    filtered = filtered.filter(p => (p.Pres || p['Pres.'] || p.Presentacion) === pres);
+                }
+                
+                // Sort by Precio $ descending
+                filtered.sort((a, b) => Number(b['Precio $']) - Number(a['Precio $']));
+                
+                specialProductTable.innerHTML = '';
+                if (filtered.length === 0) {
+                    specialProductTable.innerHTML = `<p class="text-theme-text-secondary text-center">No hay productos para esta selección.</p>`;
+                    return;
+                }
+
+                const tableHeaderPagoUsd = isPagoUsdActive ? `<th class="p-2 text-right text-xs font-bold uppercase text-theme-accent">SOLO $</th>` : '';
+                const tableHeader = `<table class="w-full text-left">
+                                        <thead><tr class="border-b border-theme-border">
+                                            <th class="p-2 w-16"></th>
+                                            <th class="p-2 text-xs font-bold uppercase text-theme-text-secondary">Producto</th>
+                                            <th class="p-2 text-right text-xs font-bold uppercase text-theme-text-secondary">US$</th>
+                                            <th class="p-2 text-right text-xs font-bold uppercase text-theme-text-secondary">Bs.</th>
+                                            ${tableHeaderPagoUsd}
+                                            <th class="w-10"></th>
+                                        </tr></thead><tbody>`;
+                
+                const tableRows = filtered.map(p => {
+                    const presValue = p.Pres || p['Pres.'] || p.Presentacion || '';
+                    const priceRegular = Number(p['Precio $']);
+                    const priceDesc = Number(p['Precio $ con Desc']);
+                    const localPrice = bcvRate > 0 ? formatNumber(priceRegular * bcvRate) : '';
+                    const pagoUsdCell = isPagoUsdActive ? `<td class="p-2 text-right font-bold text-theme-accent">${formatNumber(priceDesc)}</td>` : '';
+                    const productId = p.Producto + ' - ' + presValue;
+                    const placeholderImg = `https://placehold.co/100x100/e2e8f0/4a5568?text=${encodeURIComponent(p.Producto.charAt(0))}`;
+
+                    return `<tr class="border-b border-theme-border last:border-b-0">
+                                <td class="p-2"><img src="${p.Images || placeholderImg}" class="h-12 w-12 object-cover rounded-md" onerror="this.onerror=null;this.src='${placeholderImg}';"></td>
+                                <td class="p-2 text-sm text-theme-text-primary"><div class="line-clamp-2">${p.Producto}</div><div class="text-xs text-theme-text-secondary">${presValue}</div></td>
+                                <td class="p-2 text-right text-sm text-theme-text-primary">${formatNumber(priceRegular)}</td>
+                                <td class="p-2 text-right text-sm text-theme-text-primary">${localPrice}</td>
+                                ${pagoUsdCell}
+                                <td class="p-2 text-right"><button data-product-id="${productId}" class="add-to-cart-btn bg-theme-accent text-theme-accent-text h-7 w-7 rounded-full">+</button></td>
+                            </tr>`;
+                }).join('');
+
+                specialProductTable.innerHTML = tableHeader + tableRows + '</tbody></table>';
+            }
+
+            function populateSpecialFilters() {
+                const tipos = ["Caucho mate", "Caucho satinado", "Esmalte brillante"];
+                filterTipoSpecial.innerHTML = tipos.map(t => `<option value="${t}">${t}</option>`).join('');
+                updateSpecialPresFilter();
+            }
+
+            function updateSpecialPresFilter() {
+                const selectedTipo = filterTipoSpecial.value;
+                const relevantProducts = currentStoreProducts.filter(p => p.Tipo === selectedTipo);
+                const presentations = [...new Set(relevantProducts.map(p => p.Pres || p['Pres.'] || p.Presentacion).filter(Boolean))];
+                filterPresSpecial.innerHTML = presentations.map(p => `<option value="${p}">${p}</option>`).join('');
+                renderSpecialView();
+            }
+            
+            // --- Filter Population ---
+            function updatePresFilter() {
+                const selectedMenu = filterMenu.value;
+                const selectedTipo = filterTipo.value;
+                const currentPres = filterPres.value;
+
+                let relevantProducts = currentStoreProducts;
+                if (selectedMenu !== 'all') {
+                    relevantProducts = relevantProducts.filter(p => p.Menu === selectedMenu);
+                }
+                if (selectedTipo !== 'all') {
+                    relevantProducts = relevantProducts.filter(p => p.Tipo === selectedTipo);
+                }
+                
+                const presentations = ['Todas las Presentaciones', ...new Set(relevantProducts.map(p => p.Pres || p['Pres.'] || p.Presentacion).filter(Boolean))];
+                populateSelect(filterPres, presentations);
+
+                if (presentations.includes(currentPres)) {
+                    filterPres.value = currentPres;
+                } else {
+                    filterPres.value = 'all';
                 }
             }
 
@@ -750,16 +1050,13 @@
                 } else {
                     filterTipo.value = 'all';
                 }
+                updatePresFilter(); // Update presentations when tipo changes
             }
 
             function populateFilters() {
                 const menus = ['Todos los Menús', ...new Set(currentStoreProducts.map(p => p.Menu).filter(Boolean))];
                 populateSelect(filterMenu, menus);
-
-                updateTipoFilter();
-
-                const pres = ['Todas las Presentaciones', ...new Set(currentStoreProducts.map(p => p.Pres || p['Pres.'] || p.Presentacion).filter(Boolean))];
-                populateSelect(filterPres, pres);
+                updateTipoFilter(); // This will also call updatePresFilter
             }
             
             function populateSelect(selectElement, options) {
@@ -775,60 +1072,116 @@
             function selectStore(storeName) {
                 currentStore = storeName;
                 currentStoreProducts = allData.filter(item => item.Tienda === storeName);
-                storeSelectorContainer.style.display = 'none';
-                catalogContainer.style.display = 'block';
-                headerTitle.textContent = storeName;
-                searchContainer.classList.remove('hidden');
+                showView('catalog');
                 populateFilters();
             }
             
             // --- Event Listeners ---
-            bcvRateInput.addEventListener('input', () => {
-                const rate = parseFloat(bcvRateInput.value);
+            function handleBcvInput(e) {
+                let inputValue = e.target.value;
+
+                // Sanitize input: allow numbers, one comma or one dot.
+                inputValue = inputValue.replace(/[^0-9.,]/g, '').replace(/,/g, '.');
+                
+                const parts = inputValue.split('.');
+                if (parts.length > 2) {
+                    inputValue = parts[0] + '.' + parts.slice(1).join('');
+                }
+
+                // Update the input field with the sanitized value
+                e.target.value = inputValue;
+
+                // Sync both input fields
+                if (e.target.id === 'bcv-rate') {
+                    bcvRateInputSpecial.value = inputValue;
+                } else {
+                    bcvRateInput.value = inputValue;
+                }
+
+                const rate = parseFloat(inputValue);
+
                 if (rate > 0) {
                     bcvRate = rate;
                     catalogContent.classList.remove('hidden');
-                    renderProducts();
-                    renderCart(); // Recalculate cart totals
+                    specialCatalogContent.classList.remove('hidden');
+                    renderCurrentView();
                 } else {
                     bcvRate = 0;
                     catalogContent.classList.add('hidden');
+                    specialCatalogContent.classList.add('hidden');
                 }
+            }
+            bcvRateInput.addEventListener('input', handleBcvInput);
+            bcvRateInputSpecial.addEventListener('input', handleBcvInput);
+
+            specialViewButton.addEventListener('click', () => {
+                showView('special');
+                populateSpecialFilters();
             });
+            backToCatalogButton.addEventListener('click', () => showView('catalog'));
 
             productList.addEventListener('click', (e) => {
                 const descBtn = e.target.closest('.gemini-description-btn');
                 const cartBtn = e.target.closest('.add-to-cart-btn');
-
-                if (descBtn) {
+                if (descBtn) { 
                     const name = descBtn.dataset.productName;
                     const menu = descBtn.dataset.productMenu;
                     const tipo = descBtn.dataset.productTipo;
                     const prompt = `Genera una descripción corta y atractiva para el siguiente producto: Nombre: ${name}, Categoría: ${menu}, Tipo: ${tipo}. No más de 30 palabras.`;
                     geminiModalTitle.textContent = `Descripción para ${name}`;
                     callGeminiApi(prompt);
+                   }
+                if (cartBtn) { 
+                    showQuantityModal(cartBtn.dataset.productId); 
                 }
-                
-                if (cartBtn) {
-                    const productId = cartBtn.dataset.productId;
-                    addToCart(productId);
+            });
+            
+            specialProductTable.addEventListener('click', (e) => {
+                const cartBtn = e.target.closest('.add-to-cart-btn');
+                if (cartBtn) { 
+                    showQuantityModal(cartBtn.dataset.productId); 
                 }
             });
 
             searchBar.addEventListener('input', renderProducts);
-            filterMenu.addEventListener('change', () => {
-                updateTipoFilter();
-                renderProducts();
-            });
-            filterTipo.addEventListener('change', renderProducts);
+            filterMenu.addEventListener('change', () => { updateTipoFilter(); renderProducts(); });
+            filterTipo.addEventListener('change', () => { updatePresFilter(); renderProducts(); });
             filterPres.addEventListener('change', renderProducts);
+            filterTipoSpecial.addEventListener('change', updateSpecialPresFilter);
+            filterPresSpecial.addEventListener('change', renderSpecialView);
             
+            clearCartBtn.addEventListener('click', clearCart);
+            
+            discountInput.addEventListener('input', (e) => {
+                let value = parseFloat(e.target.value);
+                if (isNaN(value) || value < 0) {
+                    value = 0;
+                }
+                if (value > 10) {
+                    value = 10;
+                }
+                e.target.value = value;
+                discountPercentage = value;
+                saveCart();
+            });
+
             // --- Initializers ---
             initializeTheme();
             initializePagoUsd();
             loadCart();
             fetchData();
         });
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
