@@ -105,6 +105,13 @@
         #cart-panel {
             transition: transform 0.3s ease-in-out;
         }
+        #discount-input:disabled {
+            background-color: #e5e7eb; /* gray-200 */
+            cursor: not-allowed;
+        }
+        [data-theme='oscuro'] #discount-input:disabled {
+            background-color: #4b5563; /* gray-600 */
+        }
     </style>
     
 </head>
@@ -272,7 +279,7 @@
                     <!-- Discount Section -->
                     <div class="mt-4 pt-4 border-t border-theme-border space-y-2">
                         <div class="flex justify-between items-center">
-                            <label for="discount-input" class="font-medium text-theme-text-primary">Descuento (%):</label>
+                            <label for="discount-input" class="font-medium text-theme-text-primary">Descuento Global (%):</label>
                             <input type="number" id="discount-input" min="0" max="10" step="0.1" value="0" class="w-24 p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary text-right focus:ring-2 focus:ring-theme-accent">
                         </div>
                         <div class="flex justify-between text-red-500">
@@ -398,7 +405,7 @@
             let allData = [];
             let currentStoreProducts = [];
             let cart = [];
-            let discountPercentage = 0;
+            let globalDiscountPercentage = 0;
             let currentStore = '';
             let bcvRate = 0;
             let isPagoUsdActive = false;
@@ -567,7 +574,7 @@
             // --- Cart Management ---
             function clearCart() {
                 cart = [];
-                discountPercentage = 0;
+                globalDiscountPercentage = 0;
                 discountInput.value = 0;
                 saveCart();
             }
@@ -575,7 +582,7 @@
             function saveCart() {
                 const cartData = {
                     items: cart,
-                    discount: discountPercentage
+                    globalDiscount: globalDiscountPercentage
                 };
                 sessionStorage.setItem('shoppingCart', JSON.stringify(cartData));
                 updateCartBadge();
@@ -586,12 +593,12 @@
                 const savedCartData = sessionStorage.getItem('shoppingCart');
                 if (savedCartData) {
                     const cartData = JSON.parse(savedCartData);
-                    cart = cartData.items || [];
-                    discountPercentage = cartData.discount || 0;
-                    discountInput.value = discountPercentage;
+                    cart = (cartData.items || []).map(item => ({ ...item, discount: item.discount || 0 }));
+                    globalDiscountPercentage = cartData.globalDiscount || 0;
+                    discountInput.value = globalDiscountPercentage;
                 } else {
                     cart = [];
-                    discountPercentage = 0;
+                    globalDiscountPercentage = 0;
                 }
                 updateCartBadge();
                 renderCart();
@@ -617,7 +624,7 @@
                 } else {
                     const productData = allData.find(p => (p.Producto + ' - ' + (p.Pres || p['Pres.'] || p.Presentacion)) === productId);
                     if(productData) {
-                        cart.push({ id: productId, quantity: numQuantity });
+                        cart.push({ id: productId, quantity: numQuantity, discount: 0 });
                     }
                 }
                 saveCart();
@@ -634,6 +641,14 @@
                 }
             }
             
+            function updateIndividualDiscount(productId, discount) {
+                const cartItem = cart.find(item => item.id === productId);
+                if (cartItem) {
+                    cartItem.discount = discount;
+                    saveCart();
+                }
+            }
+
             function renderCart() {
                 cartItemsList.innerHTML = '';
                 if (cart.length === 0) {
@@ -647,43 +662,71 @@
 
                 let subtotalUsd = 0;
                 let subtotalSoloUsd = 0;
+                let totalIndividualDiscountAmount = 0;
+                let isAnyIndividualDiscountApplied = false;
 
                 cart.forEach(item => {
                     const productData = allData.find(p => (p.Producto + ' - ' + (p.Pres || p['Pres.'] || p.Presentacion)) === item.id);
                     if (!productData) return;
 
-                    subtotalUsd += Number(productData['Precio $']) * item.quantity;
-                    subtotalSoloUsd += Number(productData['Precio $ con Desc']) * item.quantity;
+                    const itemSubtotalUsd = Number(productData['Precio $']) * item.quantity;
+                    const itemSubtotalSoloUsd = Number(productData['Precio $ con Desc']) * item.quantity;
+                    
+                    subtotalUsd += itemSubtotalUsd;
+                    subtotalSoloUsd += itemSubtotalSoloUsd;
+
+                    const itemDiscountAmount = itemSubtotalUsd * (item.discount / 100);
+                    totalIndividualDiscountAmount += itemDiscountAmount;
+
+                    if (item.discount > 0) {
+                        isAnyIndividualDiscountApplied = true;
+                    }
                     
                     const itemElement = document.createElement('div');
-                    itemElement.className = 'flex items-center justify-between py-2 border-b border-theme-border';
+                    itemElement.className = 'flex flex-col py-2 border-b border-theme-border';
                     itemElement.innerHTML = `
-                        <div class="flex-grow">
-                            <p class="font-semibold text-theme-text-primary">${productData.Producto}</p>
-                            <p class="text-sm text-theme-text-secondary">${productData.Pres || productData['Pres.'] || productData.Presentacion}</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex-grow">
+                                <p class="font-semibold text-theme-text-primary">${productData.Producto}</p>
+                                <p class="text-sm text-theme-text-secondary">${productData.Pres || productData['Pres.'] || productData.Presentacion}</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button data-product-id="${item.id}" data-change="-1" class="quantity-change h-8 w-8 rounded-full bg-theme-surface-secondary text-theme-text-primary">-</button>
+                                <span>${item.quantity}</span>
+                                <button data-product-id="${item.id}" data-change="1" class="quantity-change h-8 w-8 rounded-full bg-theme-surface-secondary text-theme-text-primary">+</button>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button data-product-id="${item.id}" data-change="-1" class="quantity-change h-6 w-6 rounded-full bg-theme-surface-secondary text-theme-text-primary">-</button>
-                            <span>${item.quantity}</span>
-                            <button data-product-id="${item.id}" data-change="1" class="quantity-change h-6 w-6 rounded-full bg-theme-surface-secondary text-theme-text-primary">+</button>
+                        <div class="flex items-center justify-end gap-2 mt-2">
+                            <label class="text-xs text-theme-text-secondary">Desc. %:</label>
+                            <input type="number" data-product-id="${item.id}" value="${item.discount}" min="0" max="10" step="0.1" class="individual-discount-input w-20 p-1 border border-theme-border rounded-md bg-theme-surface text-theme-text-primary text-right">
                         </div>
                     `;
                     cartItemsList.appendChild(itemElement);
                 });
 
-                // Calculate discount
-                const discountRate = discountPercentage / 100;
-                const discountAmount = subtotalUsd * discountRate;
-                const finalUsd = subtotalUsd - discountAmount;
+                // --- Discount Logic ---
+                let finalDiscountAmount = 0;
+                if (isAnyIndividualDiscountApplied) {
+                    discountInput.disabled = true;
+                    discountInput.value = 0;
+                    globalDiscountPercentage = 0;
+                    finalDiscountAmount = totalIndividualDiscountAmount;
+                } else {
+                    discountInput.disabled = false;
+                    finalDiscountAmount = subtotalUsd * (globalDiscountPercentage / 100);
+                }
+
+                const finalUsd = subtotalUsd - finalDiscountAmount;
                 const finalBs = finalUsd * bcvRate;
-                const finalSoloUsdValue = subtotalSoloUsd * (1 - discountRate);
+                const finalSoloUsdValue = subtotalSoloUsd - (subtotalSoloUsd * (finalDiscountAmount / subtotalUsd));
+
 
                 // Update Subtotals
                 cartSubtotalUsd.textContent = formatNumber(subtotalUsd);
                 cartSubtotalBs.textContent = bcvRate > 0 ? formatNumber(subtotalUsd * bcvRate) : '0.00';
                 
                 // Update Discount
-                discountAmountDisplay.textContent = `- ${formatNumber(discountAmount)} US$`;
+                discountAmountDisplay.textContent = `- ${formatNumber(finalDiscountAmount)} US$`;
 
                 // Update Final Totals
                 finalTotalUsd.textContent = formatNumber(finalUsd);
@@ -719,6 +762,17 @@
                     const productId = e.target.dataset.productId;
                     const change = parseInt(e.target.dataset.change, 10);
                     updateCartQuantity(productId, change);
+                }
+            });
+            
+            cartItemsList.addEventListener('input', (e) => {
+                if (e.target.classList.contains('individual-discount-input')) {
+                    const productId = e.target.dataset.productId;
+                    let discount = parseFloat(e.target.value);
+                    if (isNaN(discount) || discount < 0) discount = 0;
+                    if (discount > 10) discount = 10;
+                    e.target.value = discount;
+                    updateIndividualDiscount(productId, discount);
                 }
             });
 
@@ -1161,7 +1215,7 @@
                     value = 10;
                 }
                 e.target.value = value;
-                discountPercentage = value;
+                globalDiscountPercentage = value;
                 saveCart();
             });
 
