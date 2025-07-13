@@ -127,7 +127,10 @@
 
         <!-- Header -->
         <header class="bg-theme-surface shadow-md p-2 md:p-4 sticky top-0 z-20 flex justify-between items-center gap-2 md:gap-4 border-b-2 border-theme-header-border">
-            <h1 id="header-title" class="text-lg md:text-2xl font-bold text-theme-text-primary text-left flex-shrink-0 truncate">Catálogo</h1>
+            <div id="header-content" class="flex-shrink-0 flex items-center h-10 min-w-0">
+                <h1 id="header-title" class="text-lg md:text-2xl font-bold text-theme-text-primary truncate">Catálogo</h1>
+                <img id="header-logo" src="" alt="Logo de la tienda" class="hidden h-full w-auto object-contain">
+            </div>
             <div id="search-container" class="flex-grow min-w-0 hidden">
                 <input type="search" id="search-bar" placeholder="Buscar producto..." class="w-full p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent">
             </div>
@@ -170,16 +173,16 @@
         <!-- Store Selector -->
         <div id="store-selector-container" class="p-4 md:p-8 text-center" style="display: none;">
             <h2 class="text-xl font-semibold mb-4">Selecciona una tienda</h2>
-            <div id="store-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+            <div id="store-list" class="flex flex-col items-center gap-4 w-full"></div>
         </div>
 
         <!-- Catalog View (hidden by default) -->
         <div id="catalog-container" class="hidden">
              <div class="p-4 flex flex-wrap gap-4 items-center">
-                 <div class="flex-grow">
-                     <label for="bcv-rate" class="block text-sm font-medium text-theme-text-secondary">Tasa BCV</label>
-                     <input type="text" inputmode="decimal" id="bcv-rate" placeholder="0.00" class="w-full md:w-48 p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent">
-                 </div>
+                 <div class="flex items-center gap-2">
+                    <label for="bcv-rate" class="text-sm font-medium text-theme-text-secondary whitespace-nowrap">Tasa BCV:</label>
+                    <input type="text" inputmode="decimal" id="bcv-rate" placeholder="0.00" class="w-full md:w-40 p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent">
+                </div>
              </div>
              <div id="catalog-content" class="hidden">
                  <div id="filters-container" class="p-4 bg-theme-surface shadow-sm sticky top-[76px] md:top-[80px] z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -198,9 +201,9 @@
         <div id="special-view-container" class="hidden">
             <div class="p-4 flex flex-wrap gap-4 items-center">
                 <button id="back-to-catalog-button" class="bg-theme-text-secondary text-theme-bg font-bold py-2 px-4 rounded-lg transition-all">&larr; Volver al Catálogo</button>
-                 <div class="flex-grow">
-                     <label for="bcv-rate-special" class="block text-sm font-medium text-theme-text-secondary">Tasa BCV</label>
-                     <input type="text" inputmode="decimal" id="bcv-rate-special" placeholder="0.00" class="w-full md:w-48 p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent">
+                 <div class="flex items-center gap-2">
+                     <label for="bcv-rate-special" class="text-sm font-medium text-theme-text-secondary whitespace-nowrap">Tasa BCV:</label>
+                     <input type="text" inputmode="decimal" id="bcv-rate-special" placeholder="0.00" class="w-full md:w-40 p-2 border border-theme-border rounded-lg bg-theme-surface text-theme-text-primary focus:ring-2 focus:ring-theme-accent">
                  </div>
             </div>
             <div id="special-catalog-content" class="hidden">
@@ -376,6 +379,10 @@
             const { jsPDF } = window.jspdf;
             
             const API_URL = "https://script.google.com/macros/s/AKfycbyCeUfSV8KNH8J1DHvce1R48OROY_BjkBlE-7m50q-J-Xd29xvQnvKCM0mJf2zcgNDkog/exec";
+            const storeImageMap = {
+                'Manongo': 'https://firebasestorage.googleapis.com/v0/b/catalogo-pinturas.firebasestorage.app/o/LogoManongoRectangular.jpg?alt=media&token=c03a93a6-019f-4210-ac97-1ceac5a92ac2',
+                'Sureinca': 'https://firebasestorage.googleapis.com/v0/b/catalogo-pinturas.firebasestorage.app/o/LogoSureincaRectangular.jpg?alt=media&token=4ae21b3c-b7c6-4950-8124-bac3c411f267'
+            };
 
             // DOM Elements
             const loader = document.getElementById('loader');
@@ -401,7 +408,9 @@
             const backToCatalogButton = document.getElementById('back-to-catalog-button');
             const specialViewButton = document.getElementById('special-view-button');
             // Header & Shared
+            const headerContent = document.getElementById('header-content');
             const headerTitle = document.getElementById('header-title');
+            const headerLogo = document.getElementById('header-logo');
             const searchContainer = document.getElementById('search-container');
             const searchBar = document.getElementById('search-bar');
             const themeMenuButton = document.getElementById('theme-menu-button');
@@ -874,14 +883,14 @@
                 if (viewName === 'store-selector') {
                     storeSelectorContainer.style.display = 'block';
                     headerTitle.textContent = 'Catálogo';
+                    headerTitle.classList.remove('hidden');
+                    headerLogo.classList.add('hidden');
                     searchContainer.classList.add('hidden');
                 } else if (viewName === 'catalog') {
                     catalogContainer.style.display = 'block';
-                    headerTitle.textContent = currentStore;
                     searchContainer.classList.remove('hidden');
                 } else if (viewName === 'special') {
                     specialViewContainer.style.display = 'block';
-                    headerTitle.textContent = 'Precios por Presentación';
                     searchContainer.classList.add('hidden');
                 }
             }
@@ -912,8 +921,15 @@
 
                 stores.forEach(store => {
                     const button = document.createElement('button');
-                    button.className = "bg-theme-surface p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all text-lg font-semibold text-theme-text-primary";
-                    button.textContent = store;
+                    
+                    if (storeImageMap[store]) {
+                        button.className = "bg-theme-surface rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex justify-center items-center h-32 overflow-hidden p-2 w-full max-w-md";
+                        button.innerHTML = `<img src="${storeImageMap[store]}" alt="${store}" class="h-full w-full object-contain">`;
+                    } else {
+                        button.className = "bg-theme-surface p-4 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all text-lg font-semibold text-theme-text-primary flex justify-center items-center h-32 w-full max-w-md";
+                        button.textContent = store;
+                    }
+                    
                     button.addEventListener('click', () => selectStore(store));
                     storeList.appendChild(button);
                 });
@@ -1185,6 +1201,18 @@
             function selectStore(storeName) {
                 currentStore = storeName;
                 currentStoreProducts = allData.filter(item => item.Tienda === storeName);
+                
+                if (storeImageMap[storeName]) {
+                    headerLogo.src = storeImageMap[storeName];
+                    headerLogo.alt = `Logo ${storeName}`;
+                    headerLogo.classList.remove('hidden');
+                    headerTitle.classList.add('hidden');
+                } else {
+                    headerTitle.textContent = storeName;
+                    headerTitle.classList.remove('hidden');
+                    headerLogo.classList.add('hidden');
+                }
+                
                 showView('catalog');
                 populateFilters();
             }
