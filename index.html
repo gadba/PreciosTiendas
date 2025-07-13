@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Precios</title>
+
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Meta tags for PWA -->
+    <meta name="theme-color" content="#374151"/>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="images/icon-192x192.png">
+
+    <style>
+        /* Custom font and basic styles */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple transition for better UX */
+        .transition-all {
+            transition: all 0.3s ease-in-out;
+        }
+        /* Hide scrollbar but allow scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Custom style for loader */
+        .loader {
+            border-top-color: #3498db;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Main App Container -->
+    <div id="app" class="max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <header class="bg-white shadow-md p-4 sticky top-0 z-20">
+            <h1 id="header-title" class="text-2xl font-bold text-gray-700 text-center">Catálogo de Precios</h1>
+        </header>
+
+        <!-- Loading Spinner -->
+        <div id="loader" class="flex justify-center items-center h-screen">
+            <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
+        </div>
+
+        <!-- Error Message Display -->
+        <div id="error-message" class="hidden text-center p-8">
+            <!-- Content will be injected by JavaScript -->
+        </div>
+
+        <!-- Store Selector -->
+        <div id="store-selector-container" class="p-4 md:p-8 text-center">
+            <h2 class="text-xl font-semibold mb-4">Selecciona una tienda</h2>
+            <div id="store-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <!-- Store buttons will be injected here -->
+            </div>
+        </div>
+
+        <!-- Catalog View (hidden by default) -->
+        <div id="catalog-container" class="hidden">
+             <!-- Back to stores button -->
+            <div class="p-4">
+                <button id="back-to-stores" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-all">
+                    &larr; Cambiar de tienda
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div id="filters-container" class="p-4 bg-white shadow-sm sticky top-[80px] z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <select id="filter-menu" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
+                <select id="filter-tipo" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
+                <select id="filter-pres" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
+            </div>
+
+            <!-- Product List -->
+            <div id="product-list" class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Product cards will be injected here -->
+            </div>
+             <div id="no-results" class="hidden text-center p-8">
+                <p class="text-gray-600 font-semibold text-lg">No se encontraron productos que coincidan con los filtros seleccionados.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PWA Service Worker Registration ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('ServiceWorker registration successful with scope: ', registration.scope))
+                    .catch(err => console.log('ServiceWorker registration failed: ', err));
+            });
+        }
+
+        // --- Application Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_URL = "https://script.google.com/macros/s/AKfycbyCeUfSV8KNH8J1DHvce1R48OROY_BjkBlE-7m50q-J-Xd29xvQnvKCM0mJf2zcgNDkog/exec";
+
+            // DOM Elements
+            const loader = document.getElementById('loader');
+            const errorMessage = document.getElementById('error-message');
+            const storeSelectorContainer = document.getElementById('store-selector-container');
+            const storeList = document.getElementById('store-list');
+            const catalogContainer = document.getElementById('catalog-container');
+            const productList = document.getElementById('product-list');
+            const noResults = document.getElementById('no-results');
+            const headerTitle = document.getElementById('header-title');
+            const backToStoresBtn = document.getElementById('back-to-stores');
+
+            // Filters
+            const filterMenu = document.getElementById('filter-menu');
+            const filterTipo = document.getElementById('filter-tipo');
+            const filterPres = document.getElementById('filter-pres');
+
+            // App State
+            let allData = [];
+            let currentStoreProducts = [];
+            let currentStore = '';
+
+            // --- Data Fetching ---
+            async function fetchData() {
+                loader.style.display = 'flex';
+                catalogContainer.style.display = 'none';
+                storeSelectorContainer.style.display = 'none';
+                errorMessage.style.display = 'none';
+                try {
+                    const response = await fetch(API_URL);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const responseData = await response.json();
+                    
+                    if (responseData && Array.isArray(responseData.data)) {
+                        allData = responseData.data;
+                    } else if (Array.isArray(responseData)) {
+                        allData = responseData;
+                    } else {
+                        throw new Error("La respuesta de la API no tiene el formato esperado.");
+                    }
+
+                    renderStoreSelector();
+                } catch (error) {
+                    console.error("Failed to fetch data:", error);
+                    errorMessage.innerHTML = `
+                        <p class="text-red-500 font-semibold">Ha ocurrido un error al cargar los datos.</p>
+                        <p class="text-gray-500 mt-2">Por favor, revisa tu conexión o inténtalo de nuevo más tarde.</p>
+                    `;
+                    errorMessage.style.display = 'block';
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }
+
+            // --- Rendering Functions ---
+            function renderStoreSelector() {
+                if (!Array.isArray(allData)) {
+                    console.error("Data received is not an array:", allData);
+                    errorMessage.innerHTML = `<p class="text-red-500 font-semibold">Error: Los datos recibidos no son válidos.</p>`;
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                
+                const stores = [...new Set(allData.map(item => item.Tienda))].filter(Boolean); 
+                storeList.innerHTML = ''; 
+
+                if (stores.length === 0) {
+                    console.warn("No stores found in data. Check that the 'Tienda' column in your Google Sheet has values.");
+                    errorMessage.innerHTML = `
+                        <p class="text-yellow-600 font-semibold">No se encontraron tiendas.</p>
+                        <p class="text-gray-500 mt-2">Por favor, verifica que la columna 'Tienda' en tu Google Sheet tenga datos y el nombre sea correcto.</p>
+                    `;
+                    errorMessage.style.display = 'block';
+                    storeSelectorContainer.style.display = 'none';
+                    return;
+                }
+
+                stores.forEach(store => {
+                    const button = document.createElement('button');
+                    button.className = "bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all text-lg font-semibold text-gray-700";
+                    button.textContent = store;
+                    button.addEventListener('click', () => selectStore(store));
+                    storeList.appendChild(button);
+                });
+                storeSelectorContainer.style.display = 'block';
+            }
+
+            function renderProducts() {
+                const filters = {
+                    Menu: filterMenu.value,
+                    Tipo: filterTipo.value,
+                    Pres: filterPres.value
+                };
+
+                const filteredProducts = currentStoreProducts.filter(product => {
+                    return (filters.Menu === 'all' || product.Menu === filters.Menu) &&
+                           (filters.Tipo === 'all' || product.Tipo === filters.Tipo) &&
+                           (filters.Pres === 'all' || product.Pres === filters.Pres);
+                });
+                
+                productList.innerHTML = ''; 
+                
+                if (filteredProducts.length === 0) {
+                    noResults.style.display = 'block';
+                } else {
+                    noResults.style.display = 'none';
+                    filteredProducts.forEach(product => {
+                        const card = document.createElement('div');
+                        card.className = "bg-white rounded-lg shadow-md overflow-hidden flex flex-col transition-all hover:shadow-lg";
+
+                        const placeholderImg = `https://placehold.co/400x400/e2e8f0/4a5568?text=${encodeURIComponent(product.Producto)}`;
+                        
+                        card.innerHTML = `
+                            <img src="${product.Images || placeholderImg}" alt="${product.Producto}" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='${placeholderImg}';">
+                            <div class="p-4 flex flex-col flex-grow">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2 flex-grow">${product.Producto}</h3>
+                                <div class="mt-auto">
+                                    <p class="text-gray-500 text-sm line-through">Precio: $${Number(product['Precio $']).toFixed(2)}</p>
+                                    <p class="text-blue-600 text-xl font-bold">Ahora: $${Number(product['Precio $ con Desc']).toFixed(2)}</p>
+                                </div>
+                            </div>
+                        `;
+                        productList.appendChild(card);
+                    });
+                }
+            }
+
+            function populateFilters() {
+                const menus = ['Todos los Menús', ...new Set(currentStoreProducts.map(p => p.Menu).filter(Boolean))];
+                const tipos = ['Todos los Tipos', ...new Set(currentStoreProducts.map(p => p.Tipo).filter(Boolean))];
+                const pres = ['Todas las Presentaciones', ...new Set(currentStoreProducts.map(p => p.Pres).filter(Boolean))];
+
+                populateSelect(filterMenu, menus, 'Menu');
+                populateSelect(filterTipo, tipos, 'Tipo');
+                populateSelect(filterPres, pres, 'Pres');
+
+                filterMenu.addEventListener('change', renderProducts);
+                filterTipo.addEventListener('change', renderProducts);
+                filterPres.addEventListener('change', renderProducts);
+            }
+            
+            function populateSelect(selectElement, options, type) {
+                selectElement.innerHTML = '';
+                options.forEach((option, index) => {
+                    const opt = document.createElement('option');
+                    if (index === 0) {
+                        opt.value = 'all';
+                        opt.textContent = option;
+                    } else {
+                        opt.value = option;
+                        opt.textContent = option;
+                    }
+                    selectElement.appendChild(opt);
+                });
+            }
+
+            function selectStore(storeName) {
+                currentStore = storeName;
+                currentStoreProducts = allData.filter(item => item.Tienda === storeName);
+                
+                storeSelectorContainer.style.display = 'none';
+                catalogContainer.style.display = 'block';
+                headerTitle.textContent = `Catálogo - ${storeName}`;
+
+                populateFilters();
+                renderProducts();
+                window.scrollTo(0, 0);
+            }
+
+            function goBackToStores() {
+                catalogContainer.style.display = 'none';
+                storeSelectorContainer.style.display = 'block';
+                headerTitle.textContent = 'Catálogo de Precios';
+                currentStore = '';
+                currentStoreProducts = [];
+            }
+
+            backToStoresBtn.addEventListener('click', goBackToStores);
+            fetchData();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "Catálogo de Precios PWA",
+  "short_name": "Catálogo",
+  "description": "Una aplicación de catálogo de precios que funciona sin conexión.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#374151",
+  "icons": [
+    {
+      "src": "images/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "images/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
