@@ -1010,7 +1010,7 @@
                                         <div class="p-4 flex flex-col flex-grow">
                                             <div class="flex items-center justify-between mb-3">
                                                 <h3 class="text-lg font-semibold text-theme-text-primary">${productName}</h3>
-                                                <button class="gemini-description-btn p-1 text-theme-text-secondary hover:text-theme-accent" data-product-name="${productName}" data-product-menu="${firstPresentation.Menu}" data-product-tipo="${firstPresentation.Tipo}">
+                                                <button class="gemini-description-btn p-1 text-theme-text-secondary hover:text-theme-accent" data-product-name="${productName}">
                                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                                                 </button>
                                             </div>
@@ -1047,7 +1047,7 @@
                                         <div class="p-4 flex flex-col flex-grow">
                                             <div class="flex items-center justify-between mb-2">
                                                 <h3 class="text-lg font-semibold text-theme-text-primary flex-grow">${product.Producto}</h3>
-                                                <button class="gemini-description-btn p-1 text-theme-text-secondary hover:text-theme-accent" data-product-name="${product.Producto}" data-product-menu="${product.Menu}" data-product-tipo="${product.Tipo}">
+                                                <button class="gemini-description-btn p-1 text-theme-text-secondary hover:text-theme-accent" data-product-name="${product.Producto}">
                                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                                                 </button>
                                             </div>
@@ -1265,13 +1265,20 @@
                 const descBtn = e.target.closest('.gemini-description-btn');
                 const cartBtn = e.target.closest('.add-to-cart-btn');
                 if (descBtn) { 
-                    const name = descBtn.dataset.productName;
-                    const menu = descBtn.dataset.productMenu;
-                    const tipo = descBtn.dataset.productTipo;
-                    const prompt = `Genera una descripción corta y atractiva para el siguiente producto: Nombre: ${name}, Categoría: ${menu}, Tipo: ${tipo}. No más de 30 palabras.`;
-                    geminiModalTitle.textContent = `Descripción para ${name}`;
-                    callGeminiApi(prompt);
-                   }
+                    const productName = descBtn.dataset.productName;
+                    const productData = currentStoreProducts.find(p => p.Producto === productName);
+
+                    if (productData) {
+                        let prompt;
+                        if (productData.descripcion_ia && productData.descripcion_ia.trim() !== '') {
+                            prompt = `Actúa como un experto en ventas. Basado en la siguiente información: '${productData.descripcion_ia}', redacta un único argumento de venta convincente y orientado a los beneficios para un cliente. El texto debe tener aproximadamente 50 palabras y ser un solo párrafo.`;
+                        } else {
+                            prompt = `Actúa como un experto en ventas. Genera un único argumento de venta convincente y orientado a los beneficios para el siguiente producto: Nombre: ${productData.Producto}, Categoría: ${productData.Menu}, Tipo: ${productData.Tipo}. El texto debe tener aproximadamente 50 palabras y ser un solo párrafo.`;
+                        }
+                        geminiModalTitle.textContent = `Argumento de Venta para ${productName}`;
+                        callGeminiApi(prompt);
+                    }
+                }
                 if (cartBtn) { 
                     showQuantityModal(cartBtn.dataset.productId); 
                 }
